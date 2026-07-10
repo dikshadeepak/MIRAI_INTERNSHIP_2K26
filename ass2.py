@@ -7,7 +7,6 @@ import time
 
 st.set_page_config(page_title="MY CHATBOT", page_icon="🤖")
 
-# Black & White Theme
 st.markdown("""
 <style>
 /* Hide Streamlit Header & Footer */
@@ -30,7 +29,7 @@ div[data-testid="stToolbar"]{
     color: white;
 }
 
-/* All normal text */
+
 h1,h2,h3,h4,h5,h6,p,label{
     color: white !important;
 }
@@ -44,14 +43,14 @@ h1,h2,h3,h4,h5,h6,p,label{
     color: white !important;
 }
 
-/* Text Input */
+
 .stTextInput input{
     background-color: black !important;
     color: white !important;
     border: 1px solid white !important;
 }
 
-/* Selectbox */
+
 .stSelectbox *{
     color: black !important;
 }
