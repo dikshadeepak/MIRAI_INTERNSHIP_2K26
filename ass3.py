@@ -58,7 +58,7 @@ p{
 
 /* Chat Input Text */
 [data-testid="stChatInput"] textarea{
-    color:white !important;
+    color:black !important;
 }
 
 /* User Chat Bubble */
@@ -86,7 +86,7 @@ section[data-testid="stSidebar"]{
 }
 
 section[data-testid="stSidebar"] *{
-    color:white;
+    color:;
 }
 
 /* Buttons */
@@ -162,10 +162,19 @@ with st.sidebar:
     st.caption("❤️ Developed by Diksha Deepak")
 
 # ---------------- APP TITLE ----------------
-st.title("🤖 The Memory Vault Chatbot")
+st.title("🤖 Memory Vault AI")
 
+st.caption("Powered by Gemini • Built with Streamlit • Stateful Conversations")
 
+st.info(
+    """
+👋 **Welcome!**
 
+This chatbot remembers your entire conversation using **Streamlit Session State**.
+
+Try asking multiple questions—you'll see the chat history remain even after the app reruns.
+"""
+)
 # ======================================================
 # TASK 1 : INITIALIZE MEMORY VAULT
 # ======================================================
