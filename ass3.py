@@ -125,6 +125,41 @@ if not api_key:
     st.stop()
 
 client = genai.Client(api_key=api_key)
+with st.sidebar:
+
+    st.title("🤖 Memory Vault")
+
+    st.success("🟢 Gemini Connected")
+
+    st.divider()
+
+    personality = st.selectbox(
+        "Choose Personality",
+        [
+            "Friendly 😊",
+            "Professional 💼",
+            "Teacher 📚",
+            "Motivator 🚀"
+        ]
+    )
+
+    st.divider()
+
+    st.info("""
+### Assignment 3
+
+✅ Stateful Chatbot
+
+✅ Session State
+
+✅ Gemini API
+
+✅ Chat Memory
+""")
+
+    st.divider()
+
+    st.caption("❤️ Developed by Diksha Deepak")
 
 # ---------------- APP TITLE ----------------
 st.title("🤖 The Memory Vault Chatbot")
