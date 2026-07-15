@@ -418,3 +418,15 @@ if surprise:
     )
 
     generate_image(random_prompt)
+
+
+
+
+
+
+
+
+
+
+VIDEO LINK:
+https://github.com/dikshadeepak/MIRAI_INTERNSHIP_2K26/blob/main/ass4.mp4
