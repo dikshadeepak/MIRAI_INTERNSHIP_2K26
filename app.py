@@ -1,361 +1,672 @@
 import streamlit as st
-from datetime import datetime
+import pandas as pd
+from google import genai
+from google.genai import types
 
-# ---------------- PAGE CONFIG ----------------
+
+# =========================================================
+# PAGE CONFIG
+# =========================================================
+
 st.set_page_config(
-    page_title="Diksha's Signal Station",
-    page_icon="📡",
-    layout="centered",
+    page_title="Life-OS | Wellbeing Dashboard",
+    page_icon="🧠",
+    layout="wide",
     initial_sidebar_state="expanded"
 )
-#-------------css-----------------
+
+
+# =========================================================
+# CUSTOM CSS
+# =========================================================
+
 st.markdown("""
 <style>
-/*optional*/
 
-/* Hide Streamlit Header & Footer */
-header[data-testid="stHeader"]{
-    background:transparent;
-    height:0px;
+.stApp {
+    background:
+        radial-gradient(
+            circle at top right,
+            #172033 0%,
+            #080b12 35%,
+            #05070b 100%
+        );
+    color: white;
 }
 
-footer{
-    visibility:hidden;
+[data-testid="stSidebar"] {
+    background: #090c13;
+    border-right: 1px solid #202938;
 }
 
-div[data-testid="stToolbar"]{
-    display:none;
-}
-/*optionalend*/
-
-
-
-/* Reduce top spacing */
-.block-container{
-    padding-top:1rem;
-    padding-bottom:1rem;
+.main-title {
+    font-size: 45px;
+    font-weight: 800;
+    margin-bottom: 0;
 }
 
-/* Animated Background */
-.stApp{
-background:linear-gradient(-45deg,
-#ff6b6b,
-#feca57,
-#48dbfb,
-#1dd1a1,
-#5f27cd);
-
-background-size:400% 400%;
-animation:gradient 15s ease infinite;
+.subtitle {
+    color: #9ca3af;
+    font-size: 17px;
+    margin-bottom: 30px;
 }
 
-@keyframes gradient{
-0%{background-position:0% 50%;}
-50%{background-position:100% 50%;}
-100%{background-position:0% 50%;}
-}
-            
-/* Rainbow Sidebar */
-section[data-testid="stSidebar"]{
-    background: linear-gradient(
-        180deg,
-        #5f27cd 0%,
-        #6a11cb 20%,
-        #2575fc 40%,
-        #00c9ff 60%,
-        #1dd1a1 80%,
-        #10ac84 100%
-    );
+.section-title {
+    font-size: 23px;
+    font-weight: 700;
+    margin-top: 30px;
+    margin-bottom: 15px;
 }
 
-/* Sidebar Text */
-section[data-testid="stSidebar"] *{
-    color: white !important;
+.coach-box {
+    background: #101621;
+    border: 1px solid #2d3748;
+    border-radius: 18px;
+    padding: 25px;
+    margin-top: 15px;
 }
 
-
-/* Title */
-h1{
-    color:white !important;
-    text-align:center;
-    font-size:42px !important;
-    font-weight:bold;
+.info-card {
+    background: #101621;
+    border: 1px solid #202938;
+    border-radius: 15px;
+    padding: 20px;
 }
 
-/* Text */
-p,label,.stMarkdown{
-    color:white !important;
-}
-
-/* Text Inputs */
-.stTextInput input{
-    background:white;
-    border-radius:12px;
-    border:2px solid #4facfe;
-    padding:10px;
-    color:black;
-}
-
-/* Button */
-.stButton>button{
-    width:100%;
-    height:50px;
-    background:linear-gradient(90deg,#00c6ff,#0072ff);
-    color:white;
-    border:none;
-    border-radius:12px;
-    font-size:20px;
-    font-weight:bold;
-    transition:.3s;
-}
-
-.stButton>button:hover{
-    transform:scale(1.02);
-    box-shadow:0 0 20px cyan;
-}
-
-/* Metric Cards */
-div[data-testid="metric-container"]{
-    background:rgba(255,255,255,.12);
-    border-radius:15px;
-    padding:12px;
-}
-
-/* Progress Bar */
-.stProgress > div > div > div{
-    background:#00E5FF;
-}
-
-/* Expander */
-details{
-    background:rgba(255,255,255,.12);
-    border-radius:12px;
-    padding:12px;
-}
-
-details summary{
-    color:white !important;
-    font-weight:bold;
-}
-
-details *{
-    color:black !important;
-}
-
-/* Footer */
-.footer{
-    text-align:center;
-    color:white;
-    font-size:16px;
-    margin-top:20px;
+.share-box {
+    background: #101621;
+    border: 1px dashed #4b5563;
+    border-radius: 15px;
+    padding: 20px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- SIDEBAR ----------------
-with st.sidebar:
 
-    st.title("📡 Signal Station")
+# =========================================================
+# LOAD CSV DATA
+# =========================================================
 
-    st.success("🟢 System Online")
+@st.cache_data
+def load_data():
 
-    st.write("---")
+    data = pd.read_csv("screentime.csv")
 
-    st.subheader("🚀 Features")
+    data["Date"] = pd.to_datetime(data["Date"])
 
-    st.write("✅ Secure Transmission")
+    return data
 
-    st.write("✅ Token Cost Estimator")
 
-    st.write("✅ Mood Detection")
+df = load_data()
 
-    st.write("✅ Character Counter")
 
-    st.write("✅ Progress Indicator")
+# =========================================================
+# GEMINI CLIENT
+# =========================================================
 
-    st.write("✅ Transmission Summary")
+def get_gemini_client():
 
-    st.write("---")
+    try:
+        api_key = st.secrets["GEMINI_API_KEY"]
 
-    st.info("Designed & Developed by\n\n**Diksha Deepak**")
+    except Exception:
 
-st.markdown('<div class="main-card">', unsafe_allow_html=True)
-
-# ---------------- TASK 1 ----------------
-st.title("📡 Diksha's Signal Station")
-
-st.write(
-    "Welcome to your personal communication portal. "
-    "Enter your details below and securely transmit your message."
-)
-
-st.caption(
-    "🕒 " + datetime.now().strftime("%d %B %Y | %I:%M %p")
-)
-
-# ---------------- TASK 2 ----------------
-user_name = st.text_input("👤 Enter Your Name")
-
-user_message = st.text_input("💬 Enter Your Message")
-
-st.caption(f"✍ Characters Typed : {len(user_message)}")
-
-st.progress(min(len(user_message)/200,1.0))
-# ---------------- TASK 3 ----------------
-if st.button("🚀 Transmit"):
-
-    # ---------------- TASK 4 ----------------
-    if user_name.strip() == "":
-        st.error("Please provide your name.")
-
-    elif user_message.strip() == "":
-        st.warning("Please type a message to transmit.")
-
-    # ---------------- TASK 5 ----------------
-    else:
-
-        st.success(
-            f"Transmission successful! Greetings, {user_name}. "
-            f"We received your message: {user_message}"
+        st.error(
+            "Gemini API key is missing. "
+            "Please configure GEMINI_API_KEY in Streamlit Secrets."
         )
 
-        # ---------------- ADVANCED CHALLENGE ----------------
-        total_characters = len(user_message)
-        token_count = total_characters / 4
+        st.stop()
 
-        st.info(
-            f"System Check: Your message will consume approximately "
-            f"{token_count:.2f} tokens from our context window."
-        )
+    return genai.Client(api_key=api_key)
 
-        st.divider()
 
-        col1, col2 = st.columns(2)
+# =========================================================
+# SIDEBAR
+# =========================================================
 
-        with col1:
-            st.metric(
-                label="📝 Characters",
-                value=total_characters
-            )
+st.sidebar.markdown("# 🧠 Life-OS")
 
-        with col2:
-            st.metric(
-                label="🪙 Estimated Tokens",
-                value=f"{token_count:.2f}"
-            )
-
-        st.divider()
-
-        # ---------------- MESSAGE ANALYSIS ----------------
-        positive_words = [
-            "happy", "great", "good", "excellent",
-            "love", "awesome", "fantastic",
-            "wonderful", "nice", "amazing"
-        ]
-
-        negative_words = [
-            "sad", "bad", "hate", "angry",
-            "worst", "terrible", "upset",
-            "poor", "boring"
-        ]
-
-        message = user_message.lower()
-
-        if any(word in message for word in positive_words):
-            st.success("😊 Message Sentiment : Positive")
-
-        elif any(word in message for word in negative_words):
-            st.error("😔 Message Sentiment : Negative")
-
-        else:
-            st.info("😐 Message Sentiment : Neutral")
-
-        st.divider()
-
-        # ---------------- EXTRA INFORMATION ----------------
-        st.subheader("📊 Transmission Statistics")
-
-        st.write(f"👤 **Sender:** {user_name}")
-        st.write(f"💬 **Characters:** {total_characters}")
-        st.write(f"🪙 **Estimated Tokens:** {token_count:.2f}")
-        st.write(
-            f"📅 **Transmission Time:** "
-            f"{datetime.now().strftime('%d %B %Y | %I:%M:%S %p')}"
-        )
-
-        st.progress(min(token_count / 100, 1.0))
-
-        st.divider()
-
-        # ---------------- TRANSMISSION SUMMARY ----------------
-        with st.expander("📨 View Transmission Summary"):
-
-            st.markdown("### 📡 Secure Transmission Report")
-
-            st.write(f"**👤 Name:** {user_name}")
-
-            st.write(f"**💬 Message:**")
-
-            st.code(user_message)
-
-            st.write(f"**🔠 Character Count:** {total_characters}")
-
-            st.write(f"**🪙 Estimated Tokens:** {token_count:.2f}")
-
-            st.write(
-                f"**🕒 Time:** "
-                f"{datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
-            )
-
-        st.balloons()
-
-st.divider()
-
-st.subheader("💡 AI Communication Tips")
-
-tips = [
-    "✨ Keep your message clear and concise.",
-    "📝 Shorter messages consume fewer AI tokens.",
-    "🔒 Never include sensitive personal information.",
-    "🤖 AI models process text based on token count.",
-    "📡 Review your message before transmitting."
-]
-
-for tip in tips:
-    st.write(tip)
-
-# ---------------- QUICK FACT ----------------
-st.info(
-    "📚 Did you know?\n\n"
-    "Large Language Models (LLMs) don't read text word by word. "
-    "Instead, they process text as **tokens**, where approximately "
-    "**1 token ≈ 4 characters**."
+st.sidebar.caption(
+    "Personal Digital Wellbeing Command Center"
 )
 
-# ---------------- FUN FACT ----------------
-with st.expander("🌟 Fun Fact About AI"):
-    st.write("""
-Artificial Intelligence models like ChatGPT estimate the cost of processing
-your input based on the number of tokens. Writing concise prompts not only
-improves responses but also reduces computational cost.
-""")
+st.sidebar.divider()
 
-# ---------------- FOOTER ----------------
-st.markdown("</div>", unsafe_allow_html=True)
 
-st.divider()
+# Get available dates
+
+available_dates = sorted(
+    df["Date"].dt.strftime("%Y-%m-%d").unique(),
+    reverse=True
+)
+
+
+# Date selector
+
+selected_date = st.sidebar.selectbox(
+    "📅 Select Day",
+    available_dates
+)
+
+
+# Daily goal
+
+daily_goal = st.sidebar.slider(
+    "🎯 Daily Screen-Time Goal",
+    min_value=60,
+    max_value=720,
+    value=240,
+    step=15
+)
+
+
+st.sidebar.divider()
+
+st.sidebar.markdown("### 📊 Dashboard")
+
+st.sidebar.caption(
+    "Track your digital habits and receive "
+    "AI-powered lifestyle recommendations."
+)
+
+
+# =========================================================
+# FILTER SELECTED DAY
+# =========================================================
+
+selected_day = df[
+    df["Date"].dt.strftime("%Y-%m-%d") == selected_date
+].copy()
+
+
+# =========================================================
+# CALCULATE STATISTICS
+# =========================================================
+
+total_today = int(
+    selected_day["Minutes_Used"].sum()
+)
+
+
+# App usage
+
+app_usage = (
+    selected_day
+    .groupby("App_Name")["Minutes_Used"]
+    .sum()
+    .sort_values(ascending=False)
+)
+
+
+# Category usage
+
+category_usage = (
+    selected_day
+    .groupby("Category")["Minutes_Used"]
+    .sum()
+    .sort_values(ascending=False)
+)
+
+
+# Most used app
+
+most_used_app = app_usage.index[0]
+
+most_used_minutes = int(
+    app_usage.iloc[0]
+)
+
+
+# Difference from goal
+
+delta_minutes = total_today - daily_goal
+
+
+# Goal percentage
+
+goal_percentage = (
+    total_today / daily_goal * 100
+)
+
+
+# =========================================================
+# HEADER
+# =========================================================
 
 st.markdown(
+    '<div class="main-title">🧠 Life-OS</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<div class="subtitle">'
+    'Your AI-powered digital wellbeing command center'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+
+# =========================================================
+# KPI ROW
+# =========================================================
+
+col1, col2, col3, col4 = st.columns(4)
+
+
+with col1:
+
+    st.metric(
+        "📱 Screen Time Today",
+        f"{total_today // 60}h {total_today % 60}m",
+        f"{delta_minutes:+d} min vs goal",
+        delta_color="inverse"
+    )
+
+
+with col2:
+
+    st.metric(
+        "🔥 Most Used App",
+        most_used_app,
+        f"{most_used_minutes} min"
+    )
+
+
+with col3:
+
+    st.metric(
+        "🎯 Daily Goal",
+        f"{daily_goal // 60}h {daily_goal % 60}m",
+        f"{goal_percentage:.0f}% used"
+    )
+
+
+with col4:
+
+    st.metric(
+        "🧩 Categories",
+        len(category_usage),
+        "tracked today"
+    )
+
+
+# =========================================================
+# STATUS
+# =========================================================
+
+if total_today <= daily_goal:
+
+    st.success(
+        f"🟢 **Great!** You stayed within your "
+        f"{daily_goal}-minute screen-time goal."
+    )
+
+elif total_today <= daily_goal * 1.25:
+
+    st.warning(
+        f"🟡 **Warning:** You are "
+        f"{total_today - daily_goal} minutes "
+        f"above your daily goal."
+    )
+
+else:
+
+    st.error(
+        f"🔴 **High Usage:** You are "
+        f"{total_today - daily_goal} minutes "
+        f"above your daily goal."
+    )
+
+
+# =========================================================
+# 14-DAY TREND
+# =========================================================
+
+st.markdown(
+    '<div class="section-title">'
+    '📈 14-Day Screen-Time Trend'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+
+daily_totals = (
+    df.groupby("Date")["Minutes_Used"]
+    .sum()
+    .sort_index()
+)
+
+
+st.line_chart(
+    daily_totals,
+    height=350
+)
+
+
+# =========================================================
+# CATEGORY + APP CHARTS
+# =========================================================
+
+left, right = st.columns(2)
+
+
+with left:
+
+    st.markdown(
+        '<div class="section-title">'
+        '📊 Usage by Category'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.bar_chart(
+        category_usage,
+        height=300
+    )
+
+
+with right:
+
+    st.markdown(
+        '<div class="section-title">'
+        '📱 App Breakdown'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.bar_chart(
+        app_usage,
+        height=300
+    )
+
+
+# =========================================================
+# DATA BRIDGE
+# =========================================================
+
+def create_ai_summary(day_data):
+
+    category_summary = (
+        day_data
+        .groupby("Category")["Minutes_Used"]
+        .sum()
+        .sort_values(ascending=False)
+    )
+
+    app_summary = (
+        day_data
+        .groupby("App_Name")["Minutes_Used"]
+        .sum()
+        .sort_values(ascending=False)
+    )
+
+    category_text = category_summary.to_string()
+
+    app_text = app_summary.to_string()
+
+    total = int(
+        day_data["Minutes_Used"].sum()
+    )
+
+    summary = f"""
+DATE:
+{selected_date}
+
+TOTAL SCREEN TIME:
+{total} minutes
+
+DAILY GOAL:
+{daily_goal} minutes
+
+CATEGORY USAGE:
+{category_text}
+
+APP USAGE:
+{app_text}
+
+MOST USED APP:
+{app_summary.index[0]} ({int(app_summary.iloc[0])} minutes)
 """
-<div class="footer">
 
-### ❤️ Designed & Developed by Diksha Deepak
+    return summary
 
-📡 **Diksha's Signal Station** | Built with **Python + Streamlit**
 
-Thank you for using this application! 🚀
+ai_data = create_ai_summary(selected_day)
 
-</div>
-""",
-unsafe_allow_html=True)       
+
+# =========================================================
+# GEMINI AI COACH
+# =========================================================
+
+def get_coaching_response(summary):
+
+    client = get_gemini_client()
+
+    prompt = f"""
+You are Life-OS, a brutal-but-fair digital wellbeing coach.
+
+Analyze the user's screen-time data below.
+
+================ USER DATA ================
+
+{summary}
+
+============================================
+
+Give a complete, personalized coaching report.
+
+IMPORTANT:
+
+- Do NOT shame or insult the user.
+- Do NOT simply say "use your phone less."
+- Identify the biggest time-consuming category.
+- Identify the most-used application.
+- Compare screen time with the daily goal.
+- Explain the user's behavior pattern.
+- Give specific real-world replacements.
+- Focus especially on replacing passive entertainment
+  and social media with meaningful offline activities.
+- Give a practical plan for tomorrow.
+- Be direct, honest and useful.
+
+Use EXACTLY these five sections:
+
+## Reality Check
+
+Explain today's screen time compared with the goal.
+Mention the total screen time and whether the user exceeded
+or stayed below the goal.
+
+## Biggest Time Leak
+
+Identify the biggest category and the biggest app.
+Explain where the user's time is going.
+
+## What To Replace It With
+
+Give at least 4 specific offline replacements.
+Make them realistic and connected to the user's usage.
+
+Examples:
+- walking
+- exercise
+- reading
+- studying
+- cooking
+- journaling
+- hobbies
+- meeting friends
+- outdoor activities
+
+## Tomorrow's Action Plan
+
+Give 4 concrete actions for tomorrow.
+
+Include specific limits such as:
+- social media limit
+- entertainment limit
+- focused work period
+- one offline activity
+
+## Coach's Verdict
+
+Give a short final verdict in 2-3 sentences.
+
+Keep the entire response around 500-700 words maximum.
+Do not stop halfway through a section.
+"""
+
+    try:
+
+        response = client.models.generate_content(
+            model="gemini-3.6-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.7,
+                max_output_tokens=2500
+            )
+        )
+
+        if response.text:
+            return response.text
+
+        return "The AI coach returned an empty response."
+
+    except Exception as e:
+
+        return f"""
+## Gemini API Error
+
+Something went wrong while generating your coaching report.
+
+Error:
+
+`{str(e)}`
+"""
+
+# =========================================================
+# AI COACH UI
+# =========================================================
+
+st.markdown(
+    '<div class="section-title">'
+    '🤖 AI Life Coach'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+
+if st.button(
+    "🧠 Analyze My Day",
+    type="primary",
+    use_container_width=True
+):
+
+    with st.spinner(
+        "Your AI coach is analyzing your habits..."
+    ):
+
+        coaching = get_coaching_response(
+            ai_data
+        )
+
+
+    st.markdown(
+        '<div class="coach-box">',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(coaching)
+
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+# =========================================================
+# RAW DATA
+# =========================================================
+
+with st.expander("🔍 View Selected Day Data"):
+
+    st.dataframe(
+        selected_day.sort_values(
+            "Minutes_Used",
+            ascending=False
+        ),
+        use_container_width=True
+    )
+
+
+# =========================================================
+# INNOVATION:
+# SHAREABLE ACCOUNTABILITY LINK
+# =========================================================
+
+st.markdown(
+    '<div class="section-title">'
+    '🔗 Accountability Link'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+
+# Add data to URL
+
+st.query_params["date"] = selected_date
+
+st.query_params["minutes"] = str(
+    total_today
+)
+
+
+# Current app URL
+
+base_url = st.context.url.split("?")[0]
+
+
+share_url = (
+    f"{base_url}"
+    f"?date={selected_date}"
+    f"&minutes={total_today}"
+)
+
+
+st.markdown(
+    """
+    <div class="share-box">
+
+    <h3>📤 Share Your Daily Stats</h3>
+
+    <p>
+    Create an accountability link containing your
+    selected date and screen-time total.
+    </p>
+
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
+st.code(share_url)
+
+
+st.caption(
+    "Copy this link and share it with an accountability partner."
+)
+
+
+# =========================================================
+# FOOTER
+# =========================================================
+
+st.divider()
+
+st.caption(
+    "Life-OS • AI Builder Track • "
+    "MirAI School of Technology • Virtual Summer Internship 2026"
+)
