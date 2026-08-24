@@ -18,6 +18,9 @@ AccessAI provides two major capabilities:
 The application is built using **Python and Streamlit**, with **Google Gemini AI** powering the intelligent image analysis and communication features.
 
 ---
+## 🚀 Live Demo
+
+👉 **[Open ACCESSAI Live](YOUR_RENDER_LIVE_URL)**
 
 ## 🎯 Problem Statement
 
@@ -235,6 +238,162 @@ Translated Message
                     │ Text + Audio         │
                     └──────────────────────┘
 
+
+## 🛠️ Tech Stack
+
+| Technology    | Purpose                    |
+| ------------- | -------------------------- |
+| Python        | Core programming language  |
+| Streamlit     | Web application interface  |
+| Google Gemini | AI story generation        |
+| gTTS          | Text-to-speech audio       |
+| JSON          | Structured story data      |
+| Requests      | API communication          |
+| Pillow        | Image processing           |
+| Git & GitHub  | Version control            |
+| Render        | Deployment                 |
+
+
+---
+
+## 📂 Project Structure
+
+```text
+ACCESSAI/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+├── .gitignore
+│
+├── ai_engine.py
+│
+└── other project files
+```
+
+---
+
+# ⚙️ Installation & Setup
+
+## 1. Clone the Repository
+
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
+```
+
+Move into the project directory:
+
+```bash
+cd ACCESSAI
+```
+
+---
+
+## 2. Create a Virtual Environment
+
+### Windows
+
+```bash
+python -m venv venv
+```
+
+Activate the virtual environment:
+
+```bash
+venv\Scripts\activate
+```
+
+### macOS / Linux
+
+```bash
+python3 -m venv venv
+```
+
+Activate it:
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+## 3. Install Dependencies
+
+Install all required Python packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# 🔐 API Key Setup
+
+ACCESSAI uses the **Google Gemini API**.
+
+### Option 1 — Local `.env` Setup
+
+Create a file named:
+
+```text
+.env
+```
+
+inside the project root directory.
+
+Add:
+
+```env
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+```
+
+Then make sure `.env` is included in `.gitignore`.
+
+**Never upload your API key to GitHub.**
+
+---
+
+## 4. Run the Application Locally
+
+Start the Streamlit application:
+
+```bash
+streamlit run app.py
+```
+
+The application will normally open at:
+
+```text
+http://localhost:8501
+```
+
+If it does not open automatically, copy the URL shown in the terminal and open it in your browser.
+
+---
+
+# ☁️ Deployment on Render
+
+ACCESSAI is deployed using **Render**.
+
+### Build Command
+
+```bash
+pip install -r requirements.txt
+```
+
+### Start Command
+
+```bash
+streamlit run app.py 
+---
+
+### Live Demo
+
+👉 YOUR_RENDER_LIVE_URL
+
+---
+
+
 🧑‍💻 AUTHOR
 ❤️Diksha Deepak
 
@@ -242,9 +401,9 @@ B.Tech — Computer Science & Engineering (AI/ML)
 
 📜 LICENSE
 
-This project is developed as an academic/capstone project.
+This project was created as part of the **MirAI School of Technology AI Builder Track – Virtual Summer Internship 2026**.
 
-It may be modified and extended for educational purposes.
+© 2026 YOUR NAME. All rights reserved.
 
 ❤️ FINAL NOTE
 
