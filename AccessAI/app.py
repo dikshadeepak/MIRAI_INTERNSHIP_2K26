@@ -165,6 +165,34 @@ section[data-testid="stSidebar"] a {
 section[data-testid="stSidebar"] a:hover {
     color: #dddddd !important;
 }
+.result-card {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    padding: 18px;
+    border-radius: 14px;
+    margin-bottom: 15px;
+}
+
+.result-title {
+    color: #111111 !important;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.result-value {
+    color: #111111 !important;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.result-card *,
+.result-title *,
+.result-value * {
+    color: #111111 !important;
+    opacity: 1 !important;
+}
+
 
 
 </style>
